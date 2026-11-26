@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="460" viewBox="0 0 1200 460" fill="none">
+  <title>从背题页，到你自己的练习页</title>
+  <desc>可见网页逐题读取，本机断点保存，校验后输出到离线练习或已有网站。流程示意，不是实际采集统计。</desc>
+  <rect x="1" y="1" width="1198" height="458" rx="20" fill="#F5F7F4" stroke="#DDE4DE"/>
+  <g font-family="Arial,'PingFang SC','Microsoft YaHei',sans-serif">
+    <rect x="48" y="44" width="6" height="22" rx="3" fill="#285C52"/>
+    <text x="68" y="61" fill="#285C52" font-size="16" font-weight="600">KAOSHIBAO WEB IMPORT</text>
+    <text x="48" y="120" fill="#202D2A" font-size="39" font-weight="600">从背题页，到你自己的练习页。</text>
+    <text x="48" y="156" fill="#66746C" font-size="19">原题有出处，答案有对应，长解析也完整保留。</text>
+    <rect x="48" y="203" width="306" height="167" rx="12" fill="#fff" stroke="#D9E1D9"/>
+    <rect x="404" y="203" width="306" height="167" rx="12" fill="#fff" stroke="#D9E1D9"/>
+    <rect x="760" y="203" width="392" height="167" rx="12" fill="#285C52"/>
+    <g stroke="#285C52" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="72" y="227" width="28" height="24" rx="3"/>
+      <path d="M72 234h28m-21 9h14"/>
+      <path d="M430 228h19l7 7v19h-26zM449 228v8h7m-19 9 4 4 9-10"/>
+    </g>
+    <g stroke="#DCE9DF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M790 227v23h29m-24-5 7-8 6 4 10-12"/>
+    </g>
+    <text x="72" y="287" fill="#202D2A" font-size="23" font-weight="600">01  逐题读取</text>
+    <text x="72" y="321" fill="#66746C" font-size="17">可见 DOM · 原网页下一题</text>
+    <text x="430" y="287" fill="#202D2A" font-size="23" font-weight="600">02  本机存档</text>
+    <text x="430" y="321" fill="#66746C" font-size="17">断点续采 · 连续性与指纹校验</text>
+    <text x="788" y="287" fill="#fff" font-size="23" font-weight="600">03  继续练习</text>
+    <text x="788" y="321" fill="#DCE9DF" font-size="17">离线练习页 / 适配已有网站</text>
+    <g stroke="#82998A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M365 285h27m-6-6 6 6-6 6M721 285h27m-6-6 6 6-6 6"/>
+    </g>
+    <text x="48" y="414" fill="#66746C" font-size="15">Codex Skill  /  Chrome 本地扩展  /  Python 标准库</text>
+    <text x="1152" y="414" fill="#66746C" font-size="14" text-anchor="end">流程示意 · 仅处理已获授权内容</text>
+  </g>
+</svg>

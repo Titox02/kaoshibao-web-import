@@ -1,0 +1,7 @@
+interface:
+  display_name: "考试宝网页逐题导入"
+  short_description: "只读可见网页逐题保存题目答案原解析，断点续采，本地校验与导入"
+  icon_small: "./assets/icon.svg"
+  icon_large: "./assets/icon.svg"
+  brand_color: "#285C52"
+  default_prompt: "使用 $kaoshibao-web-import 从已授权的考试宝背题页逐题提取答案和原解析，不调用接口，只报告进度摘要。"

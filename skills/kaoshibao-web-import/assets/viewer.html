@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' file:; base-uri 'none'; form-action 'none'; connect-src 'none'"><title>题库练习</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#fafafa;color:#222;font:16px/1.65 system-ui,-apple-system,"PingFang SC",sans-serif}main{max-width:880px;margin:auto;padding:24px 20px 110px}header,.bar,.actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}header{justify-content:space-between;border-bottom:1px solid #ddd;padding-bottom:16px}h1{font-size:22px;margin:0}h2{font-size:17px}p{margin:12px 0}button,input,select{font:inherit}button,select{min-height:44px;border:1px solid #ccc;border-radius:5px;background:#fff;padding:7px 13px;cursor:pointer}button:disabled{opacity:.55;cursor:default}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #8ba6cf;outline-offset:2px}.primary{background:#304f78;color:white;border-color:#304f78}.muted{color:#686868;font-size:14px}.bar{margin:20px 0}.bar input{min-width:100px;flex:1;min-height:44px;border:1px solid #ccc;padding:8px;border-radius:5px}.sheet{background:white;border:1px solid #ddd;border-radius:6px;padding:24px}.stem{font-size:19px;overflow-wrap:anywhere}.option{display:flex;gap:12px;align-items:start;width:100%;text-align:left;margin:8px 0;padding:9px 12px}.option[aria-pressed=true]{border-color:#304f78;background:#f0f4f8}.option.right{border-color:#46745a;background:#f1f7f3}.option.wrong{border-color:#a23d38;background:#fbf1f0}.option span:first-child{flex:none;font-weight:600}.option span:last-child{min-width:0}img{max-width:100%;height:auto}table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:5px}math{max-width:100%;overflow:auto}details{border-top:1px solid #ddd;margin-top:20px;padding-top:12px}summary{cursor:pointer;min-height:32px}.result{font-weight:600;color:#315b42}.error{color:#a23d38}.actions{margin-top:20px;justify-content:space-between}.backup{border-top:1px solid #ddd;margin-top:24px;padding-top:16px}.manual{font-size:14px;color:#805826}#status{min-height:24px}#import-file{display:none}progress{width:130px;height:8px}@media(max-width:600px){main{padding:16px 12px 70px}.sheet{padding:16px}.bar{gap:8px}.stem{font-size:18px}.actions{gap:8px}.actions button{flex:1}.backup button{font-size:14px}header{gap:8px}}
+</style></head><body><main>
+<header><h1>题库练习</h1><span id="progress" class="muted"></span><progress id="meter" value="0" max="1" aria-label="练习进度"></progress></header>
+<div class="bar"><label for="mode">范围</label><select id="mode"><option value="all">全部题目</option><option value="wrong">错题本</option></select><input id="search" type="search" placeholder="搜索题干、选项、题号" aria-label="搜索题目"><label for="jump">第</label><input id="jump" type="number" min="1" style="flex:0;width:76px;min-width:0" aria-label="跳转题号"></div>
+<p id="status" class="muted" role="status"></p><article class="sheet"><p id="source" class="muted"></p><div id="stem" class="stem"></div><p id="hint" class="muted"></p><div id="options" role="group" aria-label="答案选项"></div><p id="manual" class="manual"></p><section id="solution" hidden><p id="result" class="result" role="status"></p><h2>原答案</h2><div id="answer"></div><details><summary>原解析 · 展开查看</summary><div id="analysis"></div></details><div id="ai-wrap" hidden><h2>AI 解析（已有内容）</h2><p id="ai"></p></div></section><div class="actions"><button id="previous">上一题</button><button id="check" class="primary">核对答案</button><button id="next">下一题</button></div><button id="remove" hidden>移出错题本</button></article>
+<div class="backup bar"><button id="export">导出进度</button><button id="import">导入进度</button><input id="import-file" type="file" accept=".json,application/json"><span class="muted">本机自动保存；换电脑可导入进度。原题答案未校订。</span></div>
+</main><script type="application/json" id="quiz-data">__QUIZ_DATA__</script><script>
+'use strict';
+const bank=JSON.parse(document.getElementById('quiz-data').textContent),$=id=>document.getElementById(id), key='quiz-import:'+bank.id;
+const byKey=new Map(bank.questions.map(q=>[q.key,q]));
+let state={version:1,bankId:bank.id,current:bank.questions[0].key,records:{}},pool=[],position=0,storageFailed=false;
+const equal=(a,b)=>a.length===b.length&&[...a].sort().every((v,i)=>v===[...b].sort()[i]);
+function validated(data){
+ if(!data||data.version!==1||data.bankId!==bank.id||!data.records||typeof data.records!=='object'||Array.isArray(data.records))throw Error('进度文件不属于这份题库');
+ const records={};
+ for(const [k,r] of Object.entries(data.records)){
+  const q=byKey.get(k),allowed=q?.options.map(o=>o.key);
+  if(!q||!r||!Array.isArray(r.selection)||r.selection.length>26||r.selection.some(v=>!allowed.includes(v))||typeof r.revealed!=='boolean'||typeof r.wrong!=='boolean'||!Number.isSafeInteger(r.time)||r.time<1||r.time>Date.now()+300000)throw Error('进度记录格式错误');
+  records[k]={selection:[...new Set(r.selection)],revealed:r.revealed,wrong:r.wrong,time:r.time};
+ }
+ return {version:1,bankId:bank.id,current:byKey.has(data.current)?data.current:bank.questions[0].key,records};
+}
+try{const saved=localStorage.getItem(key);if(saved)state=validated(JSON.parse(saved))}catch(e){storageFailed=true}
+function save(){try{localStorage.setItem(key,JSON.stringify(state))}catch(e){storageFailed=true}$('status').textContent=storageFailed?'浏览器保存不可用或旧缓存无效，请用“导出进度”保留记录':'进度自动保存在本机'}
+function active(){return pool[position]}
+function record(q){return state.records[q.key]||{selection:[],revealed:false,wrong:false,time:Date.now()}}
+function update(q,r){r.time=Date.now();state.records[q.key]=r;save()}
+function list(){
+ const query=$('search').value.trim().toLowerCase();
+ pool=bank.questions.filter(q=>($('mode').value!=='wrong'||state.records[q.key]?.wrong)&&(!query||(q.searchText||(q.searchText=[q.source,q.number,q.stem,...q.options.map(o=>o.html)].join(' ').replace(/<[^>]*>/g,' ').toLowerCase())).includes(query)));
+ position=Math.max(0,pool.findIndex(q=>q.key===state.current));render();
+}
+function render(){
+ const q=active(),done=Object.values(state.records).filter(r=>r.revealed).length,wrong=Object.values(state.records).filter(r=>r.wrong).length;
+ $('progress').textContent=`已练 ${done}/${bank.questions.length} · 错题 ${wrong}`;$('meter').max=bank.questions.length;$('meter').value=done;
+ $('previous').disabled=position===0;$('next').disabled=position>=pool.length-1;$('jump').max=pool.length;$('jump').value=q?position+1:'';$('check').disabled=!q;$('solution').hidden=true;$('options').replaceChildren();$('remove').hidden=true;
+ if(!q){$('source').textContent='当前范围没有题目';$('stem').textContent='试试全部题目或其他关键词';$('hint').textContent='';$('manual').textContent='';return}
+ state.current=q.key;const r=record(q);$('source').textContent=`${position+1}/${pool.length} · ${q.source} · 原题号 ${q.number||q.sourceId}`;
+ $('stem').innerHTML=q.stem;$('manual').textContent=q.manualReason;$('hint').textContent=q.type==='multiple'?'多选：选全且不多选':q.type==='single'?'单选：选择一个答案':'自行核对原答案';
+ for(const option of q.options){
+  const button=document.createElement('button');button.className='option';button.setAttribute('aria-pressed',String(r.selection.includes(option.key)));button.disabled=r.revealed;
+  if(r.revealed&&!q.manualReason){if(q.answerKeys.includes(option.key))button.classList.add('right');else if(r.selection.includes(option.key))button.classList.add('wrong')}
+  const label=document.createElement('span'),copy=document.createElement('span');label.textContent=option.key;copy.innerHTML=option.html;button.append(label,copy);
+  button.onclick=()=>{r.selection=q.type==='single'?[option.key]:r.selection.includes(option.key)?r.selection.filter(v=>v!==option.key):[...r.selection,option.key];update(q,r);render()};$('options').append(button);
+ }
+ $('check').textContent=r.revealed?'再答一次':q.manualReason?'查看原答案':'核对答案';$('remove').hidden=!r.wrong;
+ if(r.revealed){$('solution').hidden=false;$('answer').innerHTML=q.answer||'原答案缺失';$('analysis').innerHTML=q.analysis||'原解析缺失';$('ai-wrap').hidden=!q.ai;$('ai').textContent=q.ai;
+  const right=equal(r.selection,q.answerKeys);$('result').textContent=q.manualReason?'请自行核对':right?'回答正确':'回答错误';$('result').classList.toggle('error',!q.manualReason&&!right)}save();
+}
+$('check').onclick=()=>{const q=active();if(!q)return;const r=record(q);if(r.revealed){r.revealed=false;r.selection=[]}else{if(!q.manualReason&&!r.selection.length){$('status').textContent='请先选择答案';return}r.revealed=true;if(!q.manualReason&&!equal(r.selection,q.answerKeys))r.wrong=true}update(q,r);render()};
+$('previous').onclick=()=>{if(position>0){position--;render()}};$('next').onclick=()=>{if(position<pool.length-1){position++;render()}};
+$('mode').onchange=list;$('search').oninput=list;$('jump').onchange=()=>{const n=Number($('jump').value);if(Number.isInteger(n)&&n>=1&&n<=pool.length){position=n-1;render()}};
+$('remove').onclick=()=>{const q=active(),r=record(q);r.wrong=false;update(q,r);list()};
+$('export').onclick=()=>{const a=document.createElement('a'),url=URL.createObjectURL(new Blob([JSON.stringify(state)],{type:'application/json'}));a.href=url;a.download=bank.id+'-progress.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+$('import').onclick=()=>$('import-file').click();$('import-file').onchange=async e=>{try{const f=e.target.files[0];if(!f)return;if(f.size>20*1024*1024)throw Error('进度文件过大');const imported=validated(JSON.parse(await f.text()));for(const [k,r] of Object.entries(imported.records))if(!state.records[k]||r.time>state.records[k].time)state.records[k]=r;state.current=imported.current;save();list();$('status').textContent='进度已合并'}catch(err){$('status').textContent=err.message}finally{e.target.value=''}};
+list();
+</script></body></html>

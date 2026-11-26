@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "考试宝网页逐题存档",
+  "version": "1.0.0",
+  "description": "仅读取当前可见背题页面，通过下一题按钮顺序采集，保留正确答案和原解析，不主动请求题库接口。",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "unlimitedStorage",
+    "downloads"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}
